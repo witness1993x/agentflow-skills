@@ -1,0 +1,65 @@
+# Topic profile — consumed by `af topic-profile init --from-file <this>`
+# or `af topic-profile update --from-file <this>` for partial patches.
+#
+# Copy this file, replace placeholders, then run:
+#   af topic-profile init --profile <id> --from-file path/to/your.yaml
+#
+# Field reference:
+#   label                    — human-readable display name (Telegram cards, CLI)
+#   summary                  — one-line description of who this profile speaks for
+#   intent                   — the topic surface this profile should cover
+#   publisher_account.brand  — brand string used in front-matter and prompt context
+#   publisher_account.voice  — first_party_brand | observer | personal
+#   publisher_account.pronoun — we | I | they (how the article refers to the publisher)
+#   publisher_account.output_language — zh-Hans (default) | en | zh-Hant
+#   publisher_account.do     — voice rules (≥ 2; surfaced to LLM as positive constraints)
+#   publisher_account.dont   — anti-patterns (≥ 2; surfaced as negative constraints)
+#   publisher_account.product_facts — grounded claims the LLM may cite (≥ 3)
+#   publisher_account.default_tags — fallback tags for Medium / Substack (≥ 3)
+#   keyword_groups.core      — core domain terms used by D1 hotspot scoring
+#   keyword_groups.transport — protocol / pipe terms (kafka / mqtt / etc.)
+#   keyword_groups.products  — your own product names
+#   keyword_groups.adjacent  — neighbour topics (for related-but-not-core hotspots)
+#   hotspot_terms            — primary scan keywords
+#   search_queries           — D1 search query strings
+#   default_search_query     — fallback when no filter passed
+#   avoid_terms              — exclude any hotspot mentioning these terms
+
+label: Example Publisher
+summary: Replace this with a one-line profile summary.
+intent: Replace this with the topic surface this profile should cover.
+
+publisher_account:
+  brand: Example Publisher
+  voice: first_party_brand
+  pronoun: we
+  output_language: en
+  default_description: >
+    Replace this paragraph with the publisher's audience, domain, point of view,
+    recurring topics, and products or services the writing may safely reference.
+  do:
+    - Ground claims in product_facts or cited sources.
+    - Prefer specific operational detail over generic thought leadership.
+  dont:
+    - Do not invent customer numbers, dates, launches, or benchmarks.
+    - Do not turn the article into a sales pitch.
+  product_facts:
+    - Replace with a factual statement the model may cite.
+    - Replace with another factual statement the model may cite.
+    - Replace with a third factual statement the model may cite.
+  default_tags:
+    - agentflow
+
+keyword_groups:
+  core:
+    - replace-with-core-topic
+  transport: []
+  products: []
+  adjacent: []
+
+hotspot_terms:
+  - replace-with-core-topic
+search_queries:
+  - replace-with-core-topic
+default_search_query: replace-with-core-topic
+avoid_terms: []

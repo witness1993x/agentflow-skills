@@ -1,0 +1,55 @@
+# Edit commands — consumed by `af edit --from-file <this>`
+#
+# Apply a batch of edits to one article in a single CLI call. Each entry
+# specifies a section (and optional paragraph) plus a command. The runtime
+# recognises 5 preset commands; anything else is treated as free-form
+# instruction passed verbatim to the LLM.
+#
+# Field reference:
+#   article_id           — required; the draft to edit
+#   edit_commands        — list, applied in order, each with:
+#     section            — int section index (0-based)
+#     paragraph          — optional int paragraph index (omit = whole section)
+#     command            — preset short-code OR free-form string
+#     instruction        — optional verbose instruction (overrides command)
+#     stop_on_failure    — bool, abort the batch if this edit raises (default false)
+#
+# Preset commands:
+#   改短      shrink to ~60% length, keep core argument
+#   展开      grow to ~1.5x, add details / examples
+#   改锋利    sharpen tone, drop hedging
+#   加例子    add a concrete real-world example
+#   去AI味    strip AI slop ("让我们", "值得注意的是", "综上所述")
+
+article_id: ar_REPLACE_WITH_YOUR_ARTICLE_ID
+
+edit_commands:
+  - section: 0
+    command: 改锋利
+    instruction: ""
+    stop_on_failure: false
+
+  - section: 1
+    paragraph: 0
+    command: 改短
+    instruction: ""
+    stop_on_failure: false
+
+  - section: 2
+    command: 加例子
+    instruction: |
+      Add one real-world example tied to a recent operator pain. Don't invent
+      benchmarks or customer numbers — keep it qualitative.
+    stop_on_failure: true
+
+  - section: 3
+    command: 去AI味
+    instruction: ""
+    stop_on_failure: false
+
+  # Free-form example: any string the runtime doesn't recognise as a preset
+  # falls through to the LLM as-is.
+  - section: 4
+    command: 把那段关于 subagent 的论点改成问答体
+    instruction: ""
+    stop_on_failure: false

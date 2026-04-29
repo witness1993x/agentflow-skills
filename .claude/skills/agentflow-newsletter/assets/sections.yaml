@@ -1,0 +1,66 @@
+# Newsletter sections — consumed by `af newsletter-draft --from-file <this>`
+#
+# Define the shape of one newsletter draft. The runtime merges this with the
+# source article (or scratch title) to fill the body. Anything you omit
+# inherits the template at backend/agentflow/prompts/email_newsletter.md.
+#
+# Field reference:
+#   subject_template         — Python format string; vars: {title}, {date}, {tag}
+#   preview_text_template    — short hook for inbox preview (≤ 90 chars)
+#   intro                    — opening paragraph spec; tone + length hint
+#   body_sections            — ordered list of sections, each with role + length
+#   closing                  — sign-off spec; CTA optional
+#   cta                      — call-to-action block (omit to skip)
+#   tone                     — friendly | professional | punchy
+#   length_target            — short | medium | long
+#   include_cover_image      — bool; insert article cover at top
+#   include_unsubscribe_link — bool; recommended true
+#   max_inline_images        — int; cap on inline images (Resend deliverability)
+
+subject_template: "{title} — agentflow weekly"
+preview_text_template: "what shipped, what broke, what's next"
+
+intro:
+  role: hook
+  length_words: 60
+  hint: |
+    Open with one specific operator pain or insight from the article. No
+    "in this newsletter" preamble. No "let's dive in".
+
+body_sections:
+  - role: tldr
+    heading: "TL;DR"
+    length_words: 80
+    hint: 3 bullets, max 20 words each.
+
+  - role: main_argument
+    heading: "what we learned"
+    length_words: 250
+    hint: Compress the article's central argument; cite product_facts only.
+
+  - role: example
+    heading: "from the field"
+    length_words: 150
+    hint: One concrete example. Keep it grounded; no benchmarks unless cited.
+
+  - role: aside
+    heading: "also worth noticing"
+    length_words: 100
+    hint: One paragraph of adjacent-topic signal — what else moved this week.
+
+closing:
+  role: signoff
+  length_words: 40
+  hint: Plain sign-off. No "stay tuned". One sentence + name.
+
+cta:
+  enabled: true
+  text: "Read the full article"
+  url_field: canonical_url    # pulls from article metadata at send time
+
+tone: punchy
+length_target: medium
+
+include_cover_image: true
+include_unsubscribe_link: true
+max_inline_images: 2

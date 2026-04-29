@@ -1,0 +1,68 @@
+# Style tuning — consumed by `af learn-style --from-file <this>`
+#
+# Bias the voice-profile harvest. Defaults are conservative; override only what
+# matters for your publication. Anything you leave blank inherits the default
+# from the LLM aggregation across your corpus.
+#
+# Field reference:
+#   tone_targets              — adjectives the harvest should bias toward
+#   paragraph_length_target   — preferred paragraph word-count band per language
+#   persona                   — narrator stance (operator | observer | advocate | personal)
+#   banned_phrases            — strings to surface as taboos in the profile
+#   must_phrases              — phrases the profile should always permit (anti-taboo)
+#   sentence_length_target    — short | medium | long (affects voice_principles)
+#   hedging_tolerance         — none | low | medium | high
+#   image_prompt_hints        — passed through to D2.5 image generation
+#   brand_overlay             — cover-image overlay config (off by default)
+
+publisher_account:
+  output_language: en
+
+  tone_targets:
+    - punchy
+    - operator-honest
+    - low-hype
+
+  paragraph_length_target:
+    en:
+      min_words: 30
+      max_words: 70
+    zh-Hans:
+      min_chars: 80
+      max_chars: 150
+
+  persona: operator
+
+  banned_phrases:
+    - "let's dive in"
+    - "in this article we will"
+    - "首先...其次...最后"
+
+  must_phrases: []
+
+  sentence_length_target: medium
+  hedging_tolerance: low
+
+  perspectives:
+    - Replace with a signature article angle.
+    - Replace with another recurring framing pattern.
+  do:
+    - Keep the opening concrete and tied to a recent operator pain.
+    - Include tradeoffs and failure modes before recommendations.
+  dont:
+    - Avoid generic AI productivity claims.
+    - Avoid unsupported metrics or timeline claims.
+
+  image_prompt_hints:
+    - clean editorial illustration
+    - realistic product workflow context
+
+  brand_overlay:
+    enabled: false
+    logo_path: ""
+    anchor: bottom-right
+    width_ratio: 0.12
+    padding_ratio_x: 0.04
+    padding_ratio_y: 0.04
+    recolor_dark_to_light: false
+    dark_threshold: 90

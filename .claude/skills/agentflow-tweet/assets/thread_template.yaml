@@ -1,0 +1,54 @@
+# Thread template — consumed by `af tweet-draft --from-file <this>`
+#
+# Specify the shape of one Twitter draft (single or thread). All fields below
+# have sensible defaults; override only what you need. The runtime merges this
+# with the source's hotspot/article context to produce tweets.
+#
+# Field reference:
+#   source_id           — required at CLI: hotspot_id or article_id
+#   from_article        — bool; treat source_id as article_id
+#   thread_form         — single | thread
+#   max_tweets          — int; cap thread length (default 7)
+#   min_tweets          — int; minimum to draft for thread form (default 3)
+#   tone                — sarcastic | punchy | factual | explainer
+#   pin_first_tweet     — bool; if true, the LLM is told this tweet pins as the
+#                         hook (no follow-up text required to stand alone)
+#   include_link        — bool; if true, last tweet appends the canonical URL
+#                         (only meaningful when from_article=true)
+#   handle_mentions     — list of @handles to mention (e.g. tag the cited author)
+#   hashtag_max         — int; cap on hashtags emitted (default 2)
+#   hashtag_filter      — list of regex; matching hashtags are dropped
+#   image_per_tweet_max — int; cap on attached images (Twitter hard cap is 4)
+#   chars_per_tweet     — { min, max } target band (Twitter hard limit 280)
+#   angle_index         — optional int; pick angle from source's suggested_angles
+#   forbid_phrases      — list; banned strings (in addition to style profile taboos)
+
+source_id: REPLACE_WITH_HOTSPOT_OR_ARTICLE_ID
+from_article: false
+
+thread_form: thread
+max_tweets: 7
+min_tweets: 3
+
+tone: punchy
+pin_first_tweet: true
+include_link: false
+
+handle_mentions: []
+
+hashtag_max: 2
+hashtag_filter:
+  - "^#?(thread|threads)$"
+
+image_per_tweet_max: 1
+
+chars_per_tweet:
+  min: 180
+  max: 270
+
+angle_index: 0
+
+forbid_phrases:
+  - "🧵 thread"
+  - "1/N"
+  - "buckle up"

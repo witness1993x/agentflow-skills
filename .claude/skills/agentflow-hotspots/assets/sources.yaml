@@ -1,0 +1,45 @@
+# Hotspot sources — consumed by `af hotspots --from-file <this>`
+#
+# Override the default sources (~/.agentflow/sources.yaml) for one scan only.
+# Useful for ad-hoc topic explorations without polluting your main config.
+#
+# Field reference:
+#   twitter_handles      — accounts to monitor (no @, comma list ok)
+#   rss_feeds            — full RSS/Atom URLs (HN, Substack, blog.foo.com/feed)
+#   hn_topic_filters     — case-insensitive substrings; only HN posts containing
+#                          one of these will be considered
+#   scan_window_hours    — only consider items posted in the last N hours
+#   dbscan_eps           — clustering radius (lower → more clusters / less merging)
+#   dbscan_min_samples   — minimum cluster size before a hotspot is created
+#   top_k                — number of hotspots to return (default 8)
+#   freshness_decay_hours — half-life for freshness scoring
+#   require_source_references — drop hotspots with empty source_references[]
+#                               (recommended; prevents downstream hallucination)
+
+twitter_handles:
+  - swyx
+  - simonw
+  - karpathy
+  # add 5–15 handles in your topic surface
+
+rss_feeds:
+  - https://hnrss.org/frontpage
+  - https://thezvi.substack.com/feed
+  # add domain feeds and Substacks here
+
+hn_topic_filters:
+  - llm
+  - agent
+  - mcp
+  # narrow HN intake to your topic surface
+
+scan_window_hours: 36
+
+dbscan_eps: 0.32
+dbscan_min_samples: 2
+
+top_k: 8
+
+freshness_decay_hours: 18
+
+require_source_references: true

@@ -1,0 +1,61 @@
+# Platform overrides — consumed by `af preview --from-file <this>`
+#
+# Per-platform rendering tweaks for one preview run. Useful when you want one
+# article rendered with shorter Medium paragraphs than the runtime default,
+# or denser headings on Ghost. Anything you omit inherits the platform
+# adapter's built-in default.
+#
+# Top-level keys map 1:1 to platform names. Per-platform fields:
+#   paragraph_max_words      — int, mechanical splitter target (Ghost 70, LinkedIn 40)
+#   paragraph_min_words      — int, merge short paragraphs up to this floor
+#   emoji_density            — none | low | medium | high
+#   heading_style            — atx (# H1) | setext (=== under H1)
+#   heading_max_depth        — H2 | H3 | H4
+#   include_canonical_url    — bool
+#   front_matter_extra       — dict of arbitrary YAML front-matter keys to add
+#   image_handling           — keep | strip | external_only
+#   tag_max_count            — int, cap on tags emitted
+#   tag_filters              — list of regex; tags matching get dropped
+#   excerpt_chars            — int, length of derived excerpt for index/preview
+
+medium:
+  paragraph_max_words: 0          # 0 = no enforced max
+  paragraph_min_words: 0
+  emoji_density: low
+  heading_style: atx
+  heading_max_depth: H3
+  include_canonical_url: true
+  front_matter_extra:
+    canonical: ""                 # filled per article at publish time
+  image_handling: keep
+  tag_max_count: 5
+  tag_filters: []
+  excerpt_chars: 240
+
+ghost_wordpress:
+  paragraph_max_words: 70
+  paragraph_min_words: 12
+  emoji_density: low
+  heading_style: atx
+  heading_max_depth: H3
+  include_canonical_url: false
+  front_matter_extra: {}
+  image_handling: keep
+  tag_max_count: 8
+  tag_filters:
+    - "^[的在对和]"               # drop bare-particle tags
+    - "^.{1}$"                     # drop single-character tags
+  excerpt_chars: 200
+
+linkedin_article:
+  paragraph_max_words: 40
+  paragraph_min_words: 8
+  emoji_density: medium
+  heading_style: atx
+  heading_max_depth: H2
+  include_canonical_url: false
+  front_matter_extra: {}
+  image_handling: external_only
+  tag_max_count: 3
+  tag_filters: []
+  excerpt_chars: 180

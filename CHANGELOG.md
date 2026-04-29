@@ -17,6 +17,54 @@ The version number lives in [`VERSION`](VERSION). The directory name
 
 - _no changes yet_
 
+## [1.0.2] — 2026-04-29
+
+A pure-skill-surface restructure release: every public skill now follows
+the standard layout (`SKILL.md` + `references/` + `assets/`), and every
+mention of the review daemon is explicitly marked optional.
+
+### Changed
+
+- **All 7 skills restructured** to standard layout. Each `SKILL.md` is
+  now a slim trigger + orchestration file (≤100 lines); long-form CLI
+  reference, gate definitions, and troubleshooting moved into per-skill
+  `references/`. Affects `agentflow`, `agentflow-hotspots`,
+  `agentflow-write`, `agentflow-publish`, `agentflow-style`,
+  `agentflow-tweet`, `agentflow-newsletter`.
+- **Daemon explicitly marked OPTIONAL** across all skills. The review
+  daemon is required only for **Mode B (phone-based Telegram approval)**
+  or **Mode C (hybrid)**. **Mode A** — harness-only, where Claude Code /
+  Cursor drives `af` directly — needs no daemon. The `af bootstrap
+  --start-daemon` flag is documented as opt-in, not part of the canonical
+  first-run example.
+
+### Added
+
+- **`assets/<topic>.yaml`** for each skill — CLI-consumable templates
+  the operator copies → fills → passes via the matching runtime
+  `af … --from-file` flag (added in `agentflow-article-publishing v1.0.4`).
+  - `agentflow/assets/topic_profile.yaml` → `af topic-profile init --from-file`
+  - `agentflow-style/assets/style_tuning.yaml` → `af learn-style --from-file`
+  - `agentflow-hotspots/assets/sources.yaml` → `af hotspots --from-file`
+  - `agentflow-write/assets/edit_commands.yaml` → `af edit --from-file`
+  - `agentflow-publish/assets/platform_overrides.yaml` → `af preview --from-file`
+  - `agentflow-tweet/assets/thread_template.yaml` → `af tweet-draft --from-file`
+  - `agentflow-newsletter/assets/sections.yaml` → `af newsletter-draft --from-file`
+- **`agentflow/references/daemon-when-needed.md`** — single page
+  explaining Modes A / B / C so an operator knows in <1 minute whether
+  they need to run a daemon at all.
+- **Per-skill `references/` content** — `cli.md`, `gates.md`,
+  `troubleshooting.md`, `examples.md` (where applicable). Loaded
+  on-demand by Claude Code / Cursor when the skill is in scope.
+
+### Pairs with sibling repo
+
+- **`witness1993x/agentflow-article-publishing v1.0.4`** — secrets
+  relocate to `~/.agentflow/secrets/`, deploy-bundle leak plugged,
+  `--from-file` flag on 6 CLI commands consuming this repo's `assets/`
+  YAMLs, +21 TG operator-completeness commands. The two releases ship
+  together.
+
 ## [1.0.1] — 2026-04-29
 
 ### Changed

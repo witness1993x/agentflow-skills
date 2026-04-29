@@ -1,7 +1,7 @@
 ---
 name: agentflow
 description: |
-  Top-level AgentFlow guide. Default entry is first deployment / onboarding continuation: verify runtime repo, venv, .env, skills, profile, daemon health, then guide through af bootstrap/onboard/topic-profile/doctor before daily writing.
+  Top-level AgentFlow guide. Default entry is first deployment / onboarding continuation: verify runtime repo, venv, .env, skills, profile, then guide through af bootstrap/onboard/topic-profile/doctor before daily writing. The optional Telegram review daemon is only for phone-based approval gates.
 
   TRIGGER: "agentflow", "/agentflow", "first run", "setup", "init", "bootstrap", "onboard", "af doctor", "daily workflow", "hotspot to publish".
 
@@ -10,136 +10,84 @@ description: |
 
 # agentflow — first deployment, then daily workflow
 
-AgentFlow is a single-user article pipeline. This skill is the entry point; it defaults to first deployment / onboarding continuation, then dispatches to the task-specific sibling skills once the runtime is healthy.
+AgentFlow is a single-user article pipeline. This skill is the entry point; it defaults to first deployment / onboarding continuation, then dispatches to task-specific sibling skills once runtime is healthy.
 
-When the user invokes this skill without a clear subtask, do **not** jump straight to hotspots/write/publish. First ask whether this is mock demo or real-key setup, then run the init ladder below.
+When the user invokes this skill without a clear subtask, do **not** jump to hotspots/write/publish. Ask whether this is mock demo or real-key setup, then run the init ladder below.
 
-## The sibling skills
+- **Assets:** `assets/topic_profile.yaml` — copy, fill, run `af topic-profile init --from-file <path>`
+- **References:** `references/cli.md`, `references/gates.md`, `references/troubleshooting.md`, `references/examples.md`, `references/daemon-when-needed.md` (optional Telegram-review-only daemon guide)
 
-- `agentflow-style` — teach or refresh the voice profile from past articles (`af learn-style`).
-- `agentflow-hotspots` — scan trending topics and pick one (`af hotspots`, `af hotspot-show`).
-- `agentflow-write` — turn a hotspot into a finished draft (`af write`, `af fill`, `af edit`).
-- `agentflow-publish` — run `af image-gate`, Gate C/D, preview, publish, and roll back if needed (`af preview`, `af publish`, `af publish-rollback`).
-- `agentflow-tweet` — Twitter/X 短形分发 helpers（包 `af tweet-*` 子命令）.
-- `agentflow-newsletter` — newsletter 分发 helpers（包 `af newsletter-*` 子命令）.
+## Sibling skills
+
+- `agentflow-style` — voice profile from samples (`af learn-style`).
+- `agentflow-hotspots` — pick today's topic (`af hotspots`).
+- `agentflow-write` — hotspot → draft (`af write`, `af fill`, `af edit`).
+- `agentflow-publish` — image-gate, Gate C/D, dispatch (`af preview`, `af publish`).
+- `agentflow-tweet` — Twitter/X single + thread.
+- `agentflow-newsletter` — Resend newsletter.
 
 ## Default entry — first deployment / onboarding continuation
 
-Resolve the current state in this order:
+Resolve current state in this order:
 
 1. Runtime repo exists and contains `backend/agentflow/`.
-2. CLI exists at `backend/.venv/bin/af`, or `af` is already on PATH.
+2. CLI exists at `backend/.venv/bin/af`, or `af` on PATH.
 3. `backend/.env` exists.
 4. `~/.agentflow/` exists and profile data is initialized.
-5. `af doctor --json` or `af doctor` is clean enough for the requested mode.
-6. Review daemon heartbeat exists when the user wants Telegram gates.
+5. `af doctor` is clean enough for the requested mode.
 
-Use the framework commands only:
+Use framework commands only:
 
 ```bash
 af bootstrap --next-step --json
 ```
 
-If the user wants a mock/demo setup, prefer:
+For mock/demo:
 
 ```bash
-af bootstrap --mock --first-run --start-daemon
+af bootstrap --mock --first-run     # harness flow; daemon is optional
+# add --start-daemon only if you want phone-based Telegram approval gates
 ```
 
-For real-key setup, guide one returned `next_command` at a time. Credentials must be typed by the user in the terminal via `af onboard` / `af onboard --section <id>`; never ask the user to paste API keys into chat and never edit `.env` by hand.
+For real-key setup, guide one returned `next_command` at a time. Credentials must be typed by the user in the terminal via `af onboard`; never paste API keys into chat and never edit `.env` by hand.
 
-Only after bootstrap reports ready should you continue to the daily workflow.
+The Telegram review daemon is **optional** — required only when the operator wants phone-based approve/reject. See `references/daemon-when-needed.md` to pick Mode A (harness-only, default), Mode B (TG-review), or Mode C (hybrid).
 
 ## Daily flow
 
-0. Profile drift check:
-   - `af doctor` — confirm runtime account config (`.env`, LLM, Telegram, webhook, Medium manual default, optional Ghost/LinkedIn channels).
-   - `af topic-profile show --profile <id> --json` — inspect missing publisher/profile fields.
-   - If missing fields exist, complete the Telegram profile setup session or run `af topic-profile init --profile <id> --from-file <patch.yaml>`.
-   - Optional enrichment: `af topic-profile update --profile <id> --from-file <patch.yaml>` for search queries, avoid terms, tags, image hints, canonical domain.
-   - Learning updates stay suggestion-first: review with `af topic-profile suggestion-list/review/apply` or `/suggestions`.
-1. (Once a week) `/agentflow-style` — update the voice profile from past articles.
+0. Profile drift check: `af doctor`, `af topic-profile show --profile <id> --json`. Fill missing fields via `af topic-profile init --profile <id> --from-file assets/topic_profile.yaml`. Suggestion-first updates: `af topic-profile suggestion-list/review/apply`.
+1. (Weekly) `/agentflow-style` — refresh voice profile.
 2. `/agentflow-hotspots` — pick today's topic.
-3. `/agentflow-write <hotspot_id>` — auto or manual skeleton, then edit loop.
-4. `/agentflow-publish <article_id>` — preview, resolve images, fan out or prepare Medium manual package.
+3. `/agentflow-write <hotspot_id>` — skeleton, fill, edit.
+4. `/agentflow-publish <article_id>` — preview, fan out or Medium manual package.
 
-Profile setup is part of the main flow, not a side quest. Resolve profile id in this order: explicit `--profile`, active TopicIntent profile, `AGENTFLOW_DEFAULT_TOPIC_PROFILE`, then ask the user. Do not silently reuse an old profile from another bot or project.
-
-Treat the minimal profile path as:
-
-`account_config_pending -> publisher_profile_pending -> learning_sources_pending -> extra_profile_pending -> profile_suggestions_pending -> profile_ready`
-
-Only `publisher_profile_pending` is blocking for first use. The learning sources, extra profile, and suggestions states are enrichment layers and should not block a first article unless the user asks for strict brand governance.
+Profile setup is part of the main flow. Resolve profile id in this order: explicit `--profile`, active TopicIntent, `AGENTFLOW_DEFAULT_TOPIC_PROFILE`, then ask. Do not silently reuse a profile from another bot/project. Minimal profile path: `account_config_pending → publisher_profile_pending → learning_sources_pending → extra_profile_pending → profile_suggestions_pending → profile_ready`. Only `publisher_profile_pending` is blocking for first use.
 
 ## State lives at `~/.agentflow/`
 
-- `hotspots/<YYYY-MM-DD>.json` — one file per scan day.
-- `search_results/*.json` — archived search-result bundles for traceability and later recall.
-- `drafts/<article_id>/metadata.json` — skeleton + filled sections + image placeholders.
-- `drafts/<article_id>/draft.md` — the assembled article.
-- `drafts/<article_id>/skeleton.json` — stashed so `af fill` can re-run with new indices.
-- `drafts/<article_id>/d3_output.json` — per-platform adapted versions.
-- `drafts/<article_id>/platform_versions/<platform>.md` — human-readable preview per platform.
-- `memory/events.jsonl` — append-only log of every mutation (article_created, fill_choices, section_edit, hotspot_review, preview, publish, publish_rolled_back, image_resolved, learn_style, topic_profile_updated, topic_profile_suggestion_*).
-- `intents/current.yaml` — current TopicIntent, including the selected profile when one was set.
-- `publish_history.jsonl` — one row per publish attempt and per rollback, with `platform_post_id` so rollback can target the exact post.
-- `style_profile.yaml` — the learned voice profile.
-- `topic_profiles.yaml` — the confirmed topic/profile constraints.
-- `constraint_suggestions/*.json` — suggestion-only learning artifacts waiting for review/apply.
-- `constraint_sessions/*.json` — Telegram profile-setup sessions in progress.
-- `logs/agentflow.log` — surface the tail on any CLI failure.
+- `hotspots/<YYYY-MM-DD>.json`, `search_results/*.json`
+- `drafts/<article_id>/{metadata.json, draft.md, skeleton.json, d3_output.json, platform_versions/<platform>.md}`
+- `memory/events.jsonl` — append-only mutation log
+- `intents/current.yaml`, `publish_history.jsonl`
+- `style_profile.yaml`, `topic_profiles.yaml`
+- `constraint_suggestions/*.json`, `constraint_sessions/*.json`
+- `logs/agentflow.log` — tail on any CLI failure
 
-## Running `af`
+## Cross-cutting rules
 
-The venv is at `backend/.venv/`. From the project root (or wherever cwd is):
+- Never import `agentflow.*` Python modules. Use `af`.
+- Prefer `--json`; parse inline. Use `Read` tool for large payloads.
+- On any non-zero exit: `tail -n 20 ~/.agentflow/logs/agentflow.log` and surface.
+- `MOCK_LLM=true` for deterministic dry runs.
+- Constraint changes via `af topic-profile show/init/update/suggestion-list/review/apply`, never raw yaml edits.
+- Output language follows profile's `publisher_account.output_language` (default `zh-Hans`); treat as hard prompt constraint.
 
-```bash
-cd /Users/witness/Desktop/experimental/medium\&blog_posting_agent/agentflow-article-publishing/backend
-source .venv/bin/activate
-PYTHONPATH=. af <subcommand>
-```
+### Topic intent
 
-If the shell session is already initialised, just `af <subcommand>` works.
-
-The CLI auto-loads `backend/.env` on startup (without overriding already-set env vars), so real-key runs don't need an explicit `source .env`.
-
-## MOCK_LLM toggle
-
-Prefix any `af` call with `MOCK_LLM=true` to run the full flow against canned fixtures (deterministic, instant). Drop the env var for real LLM calls.
-
-`.env` ships with `MOCK_LLM=false`; set `MOCK_LLM=true` inline to force mock for a single command.
-
-## Platform defaults
-
-Gate D defaults to Medium manual publishing because Medium package generation is always available without platform credentials. Ghost and LinkedIn are optional configured channels; include them only when the user selects them or project preferences/env make them ready.
-
-When Ghost is selected, `af publish` publishes Ghost posts live (`status=published`) by default. Set `GHOST_STATUS=draft` in env to create a hidden draft instead — useful for smoke tests. `af publish-rollback` works on both.
-
-## --json output contract
-
-`af <cmd> --json` prints pure JSON on stdout. All logs (collector progress, LLM calls, SSL warnings, compliance messages) go to **stderr**. When piping, redirect stderr: `af hotspots --json 2>/dev/null | jq .`.
-
-## Cross-cutting rules for ALL AgentFlow skills
-
-- NEVER bypass the CLI by importing agentflow Python modules directly. The `af` CLI is the contract.
-- Prefer `--json` output and parse it inline. Use the `Read` tool when the payload is too large to fit conversationally.
-- On any `af` command failure, `tail -n 20 ~/.agentflow/logs/agentflow.log` and surface the output to the user.
-- MOCK_LLM=true in env means deterministic mock — great for dry runs. Remove it for real.
-- For topic/profile constraint changes, use `af topic-profile show/init/update/suggestion-list/review/apply` instead of editing `topic_profiles.yaml` manually.
-- Keep generated article output in the profile's `publisher_account.output_language`; default is `zh-Hans` and should be treated as a hard prompt constraint.
-
-### Topic intent — a cross-flow concept
-
-When the user's message implies a specific topic (not a broad scan), treat that topic as a **TopicIntent** that threads through the whole session:
-
-- `agentflow-hotspots` → run with `af hotspots --filter <regex>`.
-- `agentflow-write` → mention the intent in the edit prompt so the article stays on-topic (and avoids the kind of hallucination where a hotspot about "consciousness" became an article about "quantum entanglement" because the LLM drifted).
-- `agentflow-publish` → Step 1b should note whether the final article still reflects the original intent.
-
-Full design: `docs/backlog/TOPIC_INTENT_FRAMEWORK.md`. Every intent use writes a `topic_intent_used` memory event so the Memory → Default Strategy layer can learn your topic patterns.
+When the user implies a topic, treat as **TopicIntent** threading the whole session: hotspots `--filter`, write keeps it in edit prompts, publish Step 1b checks alignment. Every use writes a `topic_intent_used` memory event.
 
 ## When invoked standalone
 
-If the user just says "agentflow" with no target, start with:
+If user just says "agentflow" without a target, start with:
 
-"我先按首次部署/初始化续跑检查。你要走 mock demo 还是 real-key？如果你已经 ready，我会继续到 profile / style / hotspots / write / publish。"
+> "我先按首次部署/初始化续跑检查。你要走 mock demo 还是 real-key？如果你已经 ready，我会继续到 profile / style / hotspots / write / publish。"
