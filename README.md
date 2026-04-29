@@ -44,7 +44,7 @@ README.md  (this file)
 The runtime (D0/D1/D2/D3/D4 Python pipeline, Telegram review daemon, prompts,
 config-examples, deploy assets, full test suite) lives **here**:
 
-> [`witness1993x/agentflow-article-publishing`](https://github.com/witness1993x/agentflow-article-publishing) (separate private repo)
+> [`witness1993x/agentflow-article-publishing`](https://github.com/witness1993x/agentflow-article-publishing) (separate public repo)
 
 Deploy + dependencies + Pillow + service unit + .env layout etc. are all
 documented there, not here.
