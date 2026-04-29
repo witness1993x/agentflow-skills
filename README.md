@@ -1,5 +1,7 @@
 # agentflow — Skill Distribution
 
+**Version:** see [`VERSION`](VERSION) (currently `1.0.0`) — release notes in [`CHANGELOG.md`](CHANGELOG.md). Versioning policy: skill API compatibility against the canonical runtime, not code parity. See the [Versioning](#versioning) section at the bottom.
+
 > ⚠ **READ THIS FIRST — what this repo is and isn't**
 >
 > This repo is **skill instructions only** — 7 `SKILL.md` files describing how
