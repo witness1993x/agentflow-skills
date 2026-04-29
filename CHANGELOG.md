@@ -17,6 +17,36 @@ The version number lives in [`VERSION`](VERSION). The directory name
 
 - _no changes yet_
 
+## [1.0.3] — 2026-04-30
+
+Adds the agent-driven install reference. A Claude Code / Cursor / OpenClaw
+harness loading this skill can now drive a fresh install end-to-end by
+looping on `af bootstrap --next-step --json` and reacting to the per-state
+table.
+
+### Added
+
+- **`agentflow/references/install.md`** — single source of truth on what
+  the agent should do for each `current_state` returned by
+  `af bootstrap --next-step --json`. Covers Mode A (harness-only) and
+  Mode B/C (Telegram-review) paths, including the auto-resolution rule
+  for picking a mode from credential presence.
+
+### Changed
+
+- **`agentflow/SKILL.md` "Default entry" block** rewritten as a tight
+  reference to the loop pattern + `references/install.md`. State table
+  moved out of `SKILL.md` (kept lean at ≤100 lines) into the new
+  reference file so updates to the install path don't bloat every
+  harness session.
+
+### Pairs with sibling repo
+
+- `witness1993x/agentflow-article-publishing v1.0.5` fixes the matching
+  bootstrap-detector bug (Mode A operators were being forced into Mode
+  B/C / daemon-required). Same release window; install the matching
+  pair.
+
 ## [1.0.2] — 2026-04-29
 
 A pure-skill-surface restructure release: every public skill now follows
@@ -119,6 +149,7 @@ the `af` CLI runtime is shipped separately by
   `agentflow-article-publishing` at the time of release.
 - Claude Code and Cursor are both supported invocation hosts.
 
-[Unreleased]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/witness1993x/agentflow-skills/releases/tag/v1.0.0

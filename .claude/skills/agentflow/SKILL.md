@@ -15,7 +15,7 @@ AgentFlow is a single-user article pipeline. This skill is the entry point; it d
 When the user invokes this skill without a clear subtask, do **not** jump to hotspots/write/publish. Ask whether this is mock demo or real-key setup, then run the init ladder below.
 
 - **Assets:** `assets/topic_profile.yaml` — copy, fill, run `af topic-profile init --from-file <path>`
-- **References:** `references/cli.md`, `references/gates.md`, `references/troubleshooting.md`, `references/examples.md`, `references/daemon-when-needed.md` (optional Telegram-review-only daemon guide)
+- **References:** `references/install.md` (full agent self-deploy state machine), `references/cli.md`, `references/gates.md`, `references/troubleshooting.md`, `references/examples.md`, `references/daemon-when-needed.md` (optional Telegram-review-only daemon guide)
 
 ## Sibling skills
 
@@ -28,30 +28,31 @@ When the user invokes this skill without a clear subtask, do **not** jump to hot
 
 ## Default entry — first deployment / onboarding continuation
 
-Resolve current state in this order:
-
-1. Runtime repo exists and contains `backend/agentflow/`.
-2. CLI exists at `backend/.venv/bin/af`, or `af` on PATH.
-3. `backend/.env` exists.
-4. `~/.agentflow/` exists and profile data is initialized.
-5. `af doctor` is clean enough for the requested mode.
-
-Use framework commands only:
+The agent's job: walk the operator from "just cloned the runtime repo" to `current_state == "ready"` without asking them to type anything except credentials in a terminal. Drive a single command in a loop:
 
 ```bash
 af bootstrap --next-step --json
 ```
 
-For mock/demo:
+Each call returns `{current_state, next_command, reason, stage, mode}`. The agent executes `next_command`, then re-runs the loop until `stage == "ready"`. Full state table + reaction guide at `references/install.md`.
+
+### Mode resolution (auto, no prompt)
+
+The detector reads `TELEGRAM_BOT_TOKEN` from `~/.agentflow/secrets/.env` / `~/.agentflow/secrets/telegram.env` / process env / `backend/.env`. Token present ⇒ `mode: tg_review` (Mode B/C, daemon required). Token absent ⇒ `mode: harness` (Mode A, no daemon). The agent never asks the operator which mode to pick — credential presence picks it.
+
+### Mock demo (no API keys needed)
 
 ```bash
-af bootstrap --mock --first-run     # harness flow; daemon is optional
-# add --start-daemon only if you want phone-based Telegram approval gates
+af bootstrap --mock --first-run     # writes MOCK_LLM=true, then runs the loop
 ```
 
-For real-key setup, guide one returned `next_command` at a time. Credentials must be typed by the user in the terminal via `af onboard`; never paste API keys into chat and never edit `.env` by hand.
+The mock path lands at `ready` quickly with deterministic fixtures. Operator can then drive a full hotspots → write → preview → publish round-trip without burning quota.
 
-The Telegram review daemon is **optional** — required only when the operator wants phone-based approve/reject. See `references/daemon-when-needed.md` to pick Mode A (harness-only, default), Mode B (TG-review), or Mode C (hybrid).
+### Real-key setup
+
+The agent dispatches on `current_state`. For credentials specifically: `next_command` will be `af onboard --section <id>`. The wizard reads from the operator's terminal stdin — the agent invokes the wizard and waits. **Never paste API keys into chat. Never hand-edit `.env`.** Use `af onboard` or `af keys-edit <service>`.
+
+The Telegram review daemon is **optional** — only Mode B/C operators need it. See `references/daemon-when-needed.md` for the mode-by-mode breakdown.
 
 ## Daily flow
 

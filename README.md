@@ -1,6 +1,6 @@
 # agentflow — Skill Distribution
 
-**Version:** see [`VERSION`](VERSION) (currently `1.0.2`) — release notes in [`CHANGELOG.md`](CHANGELOG.md). Versioning policy: skill API compatibility against the canonical runtime, not code parity. See the [Versioning](#versioning) section at the bottom.
+**Version:** see [`VERSION`](VERSION) (currently `1.0.3`) — release notes in [`CHANGELOG.md`](CHANGELOG.md). Versioning policy: skill API compatibility against the canonical runtime, not code parity. See the [Versioning](#versioning) section at the bottom.
 
 > ⚠ **READ THIS FIRST — what this repo is and isn't**
 >
@@ -25,13 +25,35 @@
 
 ```
 .claude/skills/
-├── agentflow/SKILL.md             ← top-level workflow guide
-├── agentflow-hotspots/SKILL.md    ← /hotspots → Gate A
-├── agentflow-write/SKILL.md       ← /write   → Gate B
-├── agentflow-publish/SKILL.md     ← /publish → Gate C/D + dispatch
-├── agentflow-tweet/SKILL.md       ← Twitter thread / single
-├── agentflow-newsletter/SKILL.md  ← Resend email digest
-├── agentflow-style/SKILL.md       ← voice profile from samples
+├── agentflow/                     ← top-level workflow guide
+│   ├── SKILL.md
+│   ├── references/                  cli, gates, troubleshooting, examples,
+│   │                                daemon-when-needed
+│   └── assets/topic_profile.yaml    af topic-profile init --from-file
+├── agentflow-hotspots/            ← /hotspots → Gate A
+│   ├── SKILL.md
+│   ├── references/                  cli, troubleshooting
+│   └── assets/sources.yaml          af hotspots --from-file
+├── agentflow-write/               ← /write   → Gate B
+│   ├── SKILL.md
+│   ├── references/                  cli, gates, troubleshooting
+│   └── assets/edit_commands.yaml    af edit --from-file
+├── agentflow-publish/             ← /publish → Gate C/D + dispatch
+│   ├── SKILL.md
+│   ├── references/                  cli, gates, troubleshooting
+│   └── assets/platform_overrides.yaml  af preview --from-file
+├── agentflow-tweet/               ← Twitter thread / single
+│   ├── SKILL.md
+│   ├── references/                  cli, troubleshooting
+│   └── assets/thread_template.yaml  af tweet-draft --from-file
+├── agentflow-newsletter/          ← Resend email digest
+│   ├── SKILL.md
+│   ├── references/                  cli, troubleshooting
+│   └── assets/sections.yaml         af newsletter-draft --from-file
+├── agentflow-style/               ← voice profile from samples
+│   ├── SKILL.md
+│   ├── references/                  cli, troubleshooting
+│   └── assets/style_tuning.yaml     af learn-style --from-file
 └── README.md                      ← skill-index / install hints
 
 LICENSE
@@ -39,7 +61,7 @@ LICENSE
 README.md  (this file)
 ```
 
-**Total size: ~90 KB / 11 files.** That's the entire repo.
+Each skill: slim `SKILL.md` (≤100 lines, trigger + orchestration) + `references/` (deep-read on demand) + `assets/` (YAML templates consumed via `af … --from-file`).
 
 ## Canonical runtime repo
 
