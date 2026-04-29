@@ -5,12 +5,12 @@ description: |
 
   TRIGGER: "/agentflow-write", "af write", "af fill", "af edit", "write draft", "Gate B", "写稿", "draft", "section edit".
 
-  SKIP for: modifying D2 prompt templates (agentflow/prompts/); modifying image-gate (belongs to agentflow-publish or a standalone flow).
+  SKIP for: modifying D2 prompt templates (agentflow/prompts/); running image-gate / Gate C/D (belongs to agentflow-publish).
 ---
 
 # agentflow-write — from hotspot to finished draft
 
-Wraps `af write`, `af fill`, `af edit`, `af draft-show`, and `af image-resolve`. Goal: produce a draft the user is happy with, then hand off to `agentflow-publish`.
+Wraps `af write`, `af fill`, `af edit`, and `af draft-show`. Goal: produce a draft the user is happy with, then hand off to `agentflow-publish` for `af image-gate` and Gate C/D.
 
 ## Inputs
 
@@ -163,8 +163,8 @@ description.zh, and priority.)
 
 Then ask: "Accept all / reject specific indices / regenerate all?"
 
-- **Accept all** → proceed to Step 4 (image-resolve) with the freshly-inserted
-  placeholders.
+- **Accept all** → keep the freshly-inserted placeholders for the publish skill's
+  `af image-gate` step.
 - **Reject [N]** → manually edit `draft.md` to remove that `[IMAGE: ...]` line,
   then `Read` it again.
 - **Regenerate** → re-run `af propose-images <article_id> --json`. It
@@ -173,7 +173,7 @@ Then ask: "Accept all / reject specific indices / regenerate all?"
 If the user says `skip`, proceed to Step 4 with whatever placeholders D2
 already inserted during fill (usually 0 in v0.5).
 
-## Step 4 — resolve images
+## Step 4 — hand off to image-gate
 
 When the user says `done` (or after Step 3.5):
 
@@ -181,28 +181,14 @@ When the user says `done` (or after Step 3.5):
 PYTHONPATH=. af draft-show <article_id> --json
 ```
 
-From `image_placeholders[]`, filter where `resolved_path` is null. If any:
+Summarise `image_placeholders[]` and then hand off to `agentflow-publish`.
+Do not try to resolve generated images in the writing loop; the current runtime
+uses `af image-gate` to choose `cover-only`, `cover-plus-body`, or `none` and to
+post Gate C/D.
 
-```
-Unresolved image placeholders:
-  1. <id> — <description> (section: <section_heading>)
-  2. ...
-Paste a local file path for each, or say 'skip' to force-strip at publish time.
-```
+Say:
 
-For each path provided:
-
-```bash
-PYTHONPATH=. af image-resolve <article_id> <placeholder_id> <absolute_path>
-```
-
-The command echoes `{"ok": true, "remaining_unresolved": N}`.
-
-## Step 5 — hand off
-
-Once images are handled (or the user chose 'skip'), say:
-
-> "Draft `<article_id>` is ready. Run `/agentflow-publish <article_id>` (add `--force-strip-images` if you skipped image resolution)."
+> "Draft `<article_id>` is ready. Run `/agentflow-publish <article_id>` to choose image mode and continue Gate C/D."
 
 ## Error handling
 
@@ -214,7 +200,7 @@ Once images are handled (or the user chose 'skip'), say:
 
 Every run of `af write` creates a new `article_id`. If the user aborts mid-flow, old drafts stay under `~/.agentflow/drafts/<id>/` — safe but clutters the queue. You may mention this once.
 
-Memory events written by this flow: `article_created`, `fill_choices`, `section_edit`, `images_proposed`, `image_resolved`.
+Memory events written by this flow: `article_created`, `fill_choices`, `section_edit`, `images_proposed`.
 
 ## NEVER
 

@@ -1,31 +1,58 @@
 ---
 name: agentflow
 description: |
-  Top-level guide for the AgentFlow daily writing workflow (profile, hotspots, write, publish).
+  Top-level AgentFlow guide. Default entry is first deployment / onboarding continuation: verify runtime repo, venv, .env, skills, profile, daemon health, then guide through af bootstrap/onboard/topic-profile/doctor before daily writing.
 
-  TRIGGER: "agentflow", "daily workflow", "/agentflow", "what's the flow", "hotspot to publish".
+  TRIGGER: "agentflow", "/agentflow", "first run", "setup", "init", "bootstrap", "onboard", "af doctor", "daily workflow", "hotspot to publish".
 
   SKIP for: single sub-tasks (use a more specific sibling skill); pure bash / grep; editing ~/.agentflow/topic_profiles.yaml user data.
 ---
 
-# agentflow — daily workflow guide
+# agentflow — first deployment, then daily workflow
 
-AgentFlow is a single-user article pipeline. This skill is the entry point; it explains the flow and dispatches to the task-specific sibling skills.
+AgentFlow is a single-user article pipeline. This skill is the entry point; it defaults to first deployment / onboarding continuation, then dispatches to the task-specific sibling skills once the runtime is healthy.
 
-When the user invokes this skill without a clear subtask, print a short overview and ask what they want to do.
+When the user invokes this skill without a clear subtask, do **not** jump straight to hotspots/write/publish. First ask whether this is mock demo or real-key setup, then run the init ladder below.
 
 ## The sibling skills
 
 - `agentflow-style` — teach or refresh the voice profile from past articles (`af learn-style`).
 - `agentflow-hotspots` — scan trending topics and pick one (`af hotspots`, `af hotspot-show`).
-- `agentflow-write` — turn a hotspot into a finished draft (`af write`, `af fill`, `af edit`, `af image-resolve`).
-- `agentflow-publish` — preview on each platform, fix images, publish, and roll back if needed (`af preview`, `af publish`, `af publish-rollback`).
+- `agentflow-write` — turn a hotspot into a finished draft (`af write`, `af fill`, `af edit`).
+- `agentflow-publish` — run `af image-gate`, Gate C/D, preview, publish, and roll back if needed (`af preview`, `af publish`, `af publish-rollback`).
 - `agentflow-tweet` — Twitter/X 短形分发 helpers（包 `af tweet-*` 子命令）.
 - `agentflow-newsletter` — newsletter 分发 helpers（包 `af newsletter-*` 子命令）.
 
-## Main flow
+## Default entry — first deployment / onboarding continuation
 
-0. First run / profile drift check:
+Resolve the current state in this order:
+
+1. Runtime repo exists and contains `backend/agentflow/`.
+2. CLI exists at `backend/.venv/bin/af`, or `af` is already on PATH.
+3. `backend/.env` exists.
+4. `~/.agentflow/` exists and profile data is initialized.
+5. `af doctor --json` or `af doctor` is clean enough for the requested mode.
+6. Review daemon heartbeat exists when the user wants Telegram gates.
+
+Use the framework commands only:
+
+```bash
+af bootstrap --next-step --json
+```
+
+If the user wants a mock/demo setup, prefer:
+
+```bash
+af bootstrap --mock --first-run --start-daemon
+```
+
+For real-key setup, guide one returned `next_command` at a time. Credentials must be typed by the user in the terminal via `af onboard` / `af onboard --section <id>`; never ask the user to paste API keys into chat and never edit `.env` by hand.
+
+Only after bootstrap reports ready should you continue to the daily workflow.
+
+## Daily flow
+
+0. Profile drift check:
    - `af doctor` — confirm runtime account config (`.env`, LLM, Telegram, webhook, Medium manual default, optional Ghost/LinkedIn channels).
    - `af topic-profile show --profile <id> --json` — inspect missing publisher/profile fields.
    - If missing fields exist, complete the Telegram profile setup session or run `af topic-profile init --profile <id> --from-file <patch.yaml>`.
@@ -113,4 +140,6 @@ Full design: `docs/backlog/TOPIC_INTENT_FRAMEWORK.md`. Every intent use writes a
 
 ## When invoked standalone
 
-If the user just says "agentflow" with no target, print the main flow above and ask: "Which step do you want to take? (profile / style / hotspots / write / publish)"
+If the user just says "agentflow" with no target, start with:
+
+"我先按首次部署/初始化续跑检查。你要走 mock demo 还是 real-key？如果你已经 ready，我会继续到 profile / style / hotspots / write / publish。"

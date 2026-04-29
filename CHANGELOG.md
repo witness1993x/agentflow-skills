@@ -17,6 +17,26 @@ The version number lives in [`VERSION`](VERSION). The directory name
 
 - _no changes yet_
 
+## [1.0.1] — 2026-04-29
+
+### Changed
+
+- Make the top-level `agentflow` skill default to first deployment /
+  onboarding continuation instead of the daily writing loop when the user's
+  intent is ambiguous.
+- Point first-run guidance at `af bootstrap --next-step --json`,
+  `af bootstrap --mock --first-run --start-daemon`, `af onboard`,
+  `af topic-profile`, and `af doctor` instead of manual `.env` edits or
+  direct symlink setup.
+- Update publish guidance so the primary image path is
+  `af image-gate <article_id> --mode ...`, with `--mode none` explicitly
+  routing to Gate D.
+
+### Fixed
+
+- Reduce stale `image-resolve` emphasis in writing/publishing skill text now
+  that image generation and Gate C/D routing are owned by `af image-gate`.
+
 ## [1.0.0] — 2026-04-28
 
 First public skill distribution. Pure prompt artifacts (~90 KB / 11 files);
@@ -51,5 +71,6 @@ the `af` CLI runtime is shipped separately by
   `agentflow-article-publishing` at the time of release.
 - Claude Code and Cursor are both supported invocation hosts.
 
-[Unreleased]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/witness1993x/agentflow-skills/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/witness1993x/agentflow-skills/releases/tag/v1.0.0

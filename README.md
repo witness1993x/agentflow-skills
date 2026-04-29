@@ -1,6 +1,6 @@
 # agentflow — Skill Distribution
 
-**Version:** see [`VERSION`](VERSION) (currently `1.0.0`) — release notes in [`CHANGELOG.md`](CHANGELOG.md). Versioning policy: skill API compatibility against the canonical runtime, not code parity. See the [Versioning](#versioning) section at the bottom.
+**Version:** see [`VERSION`](VERSION) (currently `1.0.1`) — release notes in [`CHANGELOG.md`](CHANGELOG.md). Versioning policy: skill API compatibility against the canonical runtime, not code parity. See the [Versioning](#versioning) section at the bottom.
 
 > ⚠ **READ THIS FIRST — what this repo is and isn't**
 >
@@ -90,23 +90,36 @@ git clone https://github.com/witness1993x/agentflow-article-publishing.git
 cd agentflow-article-publishing/backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
-af doctor                 # verify keys
+af bootstrap --next-step --json
 ```
 
 For Linux VM deploy: download a deploy bundle (`scripts/build_deploy_bundle.sh`
 in the canonical runtime) and run `sudo bash deploy.sh` — handles venv +
 systemd + chmod 600 in one shot. See `agentflow-deploy/INSTALL_LINUX.md`.
 
-After this, `af` is on `$PATH`.
+For a local mock/demo first run, use:
+
+```bash
+af bootstrap --mock --first-run --start-daemon
+```
+
+For real-key setup, follow `af bootstrap --next-step --json` one returned
+`next_command` at a time. Credentials are entered in the terminal through
+`af onboard` / `af onboard --section <id>`, not pasted into chat and not
+hand-edited into `.env`.
+
+After this, `af` is on `$PATH` or available at `backend/.venv/bin/af`.
 
 ### 2. Drop these skills into your workspace
 
-Either:
-- Copy `.claude/skills/` into the project where you want skills active, or
-- Symlink: `ln -s /path/to/openclaw/agentflow-1.0.0/.claude/skills <project>/.claude/skills`
+Use the canonical runtime command:
 
-The canonical runtime ships `af skill-install` which automates this and is
-the recommended path — it handles the symlink + permissions for both
+```bash
+af skill-install
+```
+
+Manual copy/symlink is a fallback only when the runtime CLI is not available.
+The CLI path keeps host-specific directories and permissions consistent for
 Claude Code and Cursor configs.
 
 ### 3. Use

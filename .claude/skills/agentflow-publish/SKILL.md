@@ -1,16 +1,16 @@
 ---
 name: agentflow-publish
 description: |
-  Preview, resolve images, publish configured platforms, or prepare Medium manual fallback.
+  Run image-gate, Gate C/D, preview, publish configured platforms, or prepare Medium manual fallback.
 
   TRIGGER: "/agentflow-publish", "af preview", "af publish", "Gate C", "Gate D", "image-gate", "publish-rollback", "medium-package", "review-publish-mark", "PR:mark", "I:cover_only", "PD:dispatch".
 
   SKIP for: modifying D3 platform adapter internals (agent_d3/adapters/); modifying D4 publisher internals (agent_d4/publishers/); editing platform-specific token / OAuth flows.
 ---
 
-# agentflow-publish — preview, fan out, or prepare Medium manual publish
+# agentflow-publish — image gate, preview, fan out, or Medium manual publish
 
-Wraps `af draft-show`, `af image-resolve`, `af image-auto-resolve`, `af preview`, `af publish`, and `af publish-rollback`. Goal: ship `<article_id>` to every configured long-form platform and report status — or take a post back down if the user changes their mind.
+Wraps `af draft-show`, `af image-gate`, `af preview`, `af publish`, `af medium-package`, `af review-publish-mark`, and `af publish-rollback`. Goal: move an approved draft through Gate C/D, ship selected long-form platforms, and report status — or take a post back down if the user changes their mind.
 
 **Platform status (v0.1):**
 - `medium` — default. Manual package/browser paste is always available; close the loop with `af review-publish-mark <article_id> <url>`.
@@ -117,42 +117,35 @@ Shortcut: if `af intent-check` is wired, run `PYTHONPATH=. af intent-check <arti
 
 Then pause: "Review this overview. Proceed to platform previews? (yes / edit first via `/agentflow-write <article_id>` / cancel)"
 
-## Step 2 — resolve images (or force-strip)
+## Step 2 — image gate (Gate C entry)
 
-If Z > 0:
+Choose one image mode with the user:
 
-```
-Unresolved images:
-  1. <id> — <description>
-  2. ...
-Options:
-  (a) paste a local file path for each,
-  (a2) say 'auto' to try `af image-auto-resolve`,
-  (b) say 'strip' to force-strip all placeholders at publish time,
-  (c) say 'cancel' to abort.
-```
+- `cover-only` — default cover generation; posts Gate C when Telegram is configured.
+- `cover-plus-body` — generate cover plus body images; posts Gate C when Telegram is configured.
+- `none` — skip image generation, transition to `image_skipped`, and immediately post Gate D.
 
-If the user says `auto`, run:
+Run:
 
 ```bash
-PYTHONPATH=. af image-auto-resolve <article_id> --json
+PYTHONPATH=. af image-gate <article_id> --mode cover-only --json
 ```
 
-If they have a known local library path, include it:
+or:
 
 ```bash
-PYTHONPATH=. af image-auto-resolve <article_id> --library <absolute_dir> --json
+PYTHONPATH=. af image-gate <article_id> --mode none --json
 ```
 
-Show the matched files and remaining unresolved count, then continue with manual `af image-resolve` only for anything still unresolved.
+Interpret the result:
 
-For each path the user gives:
+- `gate_c_short_id` means Gate C was posted for review.
+- `gate_d_short_id` means the `none` path skipped Gate C and posted Gate D directly.
+- If non-JSON output says `next: af preview ... --skip-images`, remember to use `--skip-images` for preview and `--force-strip-images` for publish in `none` mode.
 
-```bash
-PYTHONPATH=. af image-resolve <article_id> <placeholder_id> <absolute_path>
-```
+If `image-gate` fails with an Atlas/preflight error, run `af doctor`; offer `--mode none` only when the user accepts publishing without generated images.
 
-If they say `strip`, remember this and later pass `--force-strip-images` to `af preview` and `af publish`.
+Do not fall back to manually editing image files unless the user explicitly asks for a local-file override.
 
 ## Step 3 — preview (D3 adapters)
 
@@ -164,7 +157,7 @@ PYTHONPATH=. af preview <article_id> --json
 
 For the explicit Medium manual path: `PYTHONPATH=. af preview <article_id> --platforms medium --json`, then `PYTHONPATH=. af medium-package <article_id>`.
 
-Add `--force-strip-images` if the user chose strip in Step 2.
+Add `--skip-images` if the user chose `image-gate --mode none`.
 
 This writes `~/.agentflow/drafts/<article_id>/d3_output.json` and `~/.agentflow/drafts/<article_id>/platform_versions/<platform>.md`.
 
@@ -194,7 +187,7 @@ PYTHONPATH=. af publish <article_id> --platforms <csv> [--force-strip-images] --
 
 Use `--platforms medium` for the default manual flow. Include `ghost_wordpress` or `linkedin_article` only when the user selected those ready channels.
 
-If Step 2 ended with unresolved images NOT resolved, the CLI will abort unless `--force-strip-images` was passed. Respect that — don't paper over it.
+If Step 2 used `--mode none`, include `--force-strip-images`. Respect image-related CLI failures — don't paper over them.
 
 For Medium default/manual, expect a `manual` result/package rather than a direct URL. Tell the user to paste the package in Medium, then run:
 
@@ -254,7 +247,7 @@ PYTHONPATH=. af publish-rollback <article_id> --post-id <platform_post_id> --jso
 
 ## Error handling
 
-- `af publish` fails with "Unresolved image placeholders present." → means you skipped Step 2 or the user didn't commit to strip. Re-prompt.
+- `af publish` fails with image placeholder errors → means you skipped Step 2 or forgot `--force-strip-images` after `image-gate --mode none`. Re-prompt.
 - `af publish` fails with "no platform versions found" → you skipped Step 3 (preview). Run it now.
 - Any other non-zero: `tail -n 20 ~/.agentflow/logs/agentflow.log` and show.
 - `~/.agentflow/publish_history.jsonl` is append-only — each publish leaves a record regardless of success; you don't need to write to it.

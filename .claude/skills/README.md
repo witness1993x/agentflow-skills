@@ -4,17 +4,23 @@ Self-contained skills that let a user drive the AgentFlow workflow from inside a
 
 ## Contents
 
-- `agentflow/` — top-level guide. Explains profile/bootstrap, hotspots, writing, and publishing.
+- `agentflow/` — top-level guide. Defaults to first deployment / onboarding continuation, then profile/bootstrap, hotspots, writing, and publishing.
 - `agentflow-style/` — wraps `af learn-style` to teach/refresh the voice profile.
 - `agentflow-hotspots/` — wraps `af hotspots` + `af hotspot-show` to pick today's topic.
-- `agentflow-write/` — wraps `af write` / `af fill` / `af edit` / `af image-resolve` for the full writing loop.
-- `agentflow-publish/` — wraps `af preview` + `af publish`, including Medium manual package fallback.
+- `agentflow-write/` — wraps `af write` / `af fill` / `af edit` for the full writing loop.
+- `agentflow-publish/` — wraps `af image-gate`, Gate C/D, `af preview`, `af publish`, and Medium manual package fallback.
 - `agentflow-tweet/` — Twitter/X short-form distribution helpers.
 - `agentflow-newsletter/` — newsletter distribution helpers.
 
 ## Install
 
-Option A (symlink — follows repo updates):
+Recommended: install through the canonical runtime CLI so permissions and host-specific paths stay consistent:
+
+```bash
+af skill-install
+```
+
+Fallback only when the runtime CLI is not available yet: symlink manually.
 
 ```bash
 ln -s "$(pwd)/.claude/skills/agentflow"           ~/.claude/skills/agentflow
@@ -26,13 +32,13 @@ ln -s "$(pwd)/.claude/skills/agentflow-tweet"     ~/.claude/skills/agentflow-twe
 ln -s "$(pwd)/.claude/skills/agentflow-newsletter" ~/.claude/skills/agentflow-newsletter
 ```
 
-Option B (copy — snapshots the current version):
+Copy fallback — snapshots the current version:
 
 ```bash
 cp -R .claude/skills/agentflow*         ~/.claude/skills/
 ```
 
-Option C (run from project root) — Claude Code auto-registers skills under `.claude/skills/` when its cwd is at or below the project root. No install step; just launch Claude Code here.
+Run-from-project-root fallback — Claude Code auto-registers skills under `.claude/skills/` when its cwd is at or below the project root. No install step; just launch Claude Code here.
 
 ## Invoke
 
@@ -44,12 +50,11 @@ From a Claude Code session, use either:
 ## Daily flow
 
 ```
-    first run / drift check
+    first deployment / onboarding continuation
             │
             ▼
-  account config + topic profile
-  (doctor, topic-profile show/init/update,
-   suggestions review/apply)
+  af bootstrap --next-step --json
+  af onboard / topic-profile / doctor
             │
             ▼
           once a week                        daily
@@ -81,6 +86,7 @@ From a Claude Code session, use either:
 - All skills assume the project lives at `<repo_root>/` and the venv at `<repo_root>/backend/.venv/`.
 - For mock-friendly demos: `export MOCK_LLM=true` before running.
 - `topic_profiles.yaml` is the source of truth for publisher/topic constraints; use `af topic-profile` commands rather than editing it directly.
+- If the user just says "agentflow", default to first deployment / onboarding continuation. Do not jump straight into hotspots/write/publish unless they explicitly say runtime is ready.
 
 ## Shared rules (enforced by every skill)
 
